@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выбор месяца</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            color: #1b1b1b;
+            padding-top: 60px;
+        }
+
+        nav {
+            background-color: #000;
+            padding: 10px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            margin: 0;
+        }
+
+        nav ul li {
+            margin-right: 10px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            padding: 12px 20px;
+            display: block;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            background-color: #444;
+            transform: scale(1.05);
+        }
+
+        nav ul li a.active {
+            background-color: #555;
+            border-radius: 5px;
+        }
+
+        .logout-button {
+            margin-left: auto;
+        }
+
+        .logout-button a {
+            text-decoration: none;
+            color: #fff;
+            background-color: #3a6a3a;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .logout-button a:hover {
+            background-color: #2e5a2e;
+            transform: scale(1.05);
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: black;
+            font-size: 2.5em;
+            margin: 10;
+        }
+
+
+        .year-container {
+            margin-top: 20px;
+        }
+
+        .year {
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
+            text-align: left;
+        }
+
+        .year:hover {
+            background-color: #e0e0e0;
+        }
+
+        .months {
+            display: none;
+            margin: 20px 0;
+            padding: 0;
+        }
+
+        .months.show {
+            display: flex;
+            flex-wrap: wrap;
+            margin-left: 20px; /* Отступ слева для карточек */
+        }
+
+        .month-card {
+            background-color: #3a6a3a; /* Темно-зеленая карточка */
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 10px;
+            transition: transform 0.3s, background-color 0.3s;
+            flex: 1 1 150px;
+            max-width: 200px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .month-card:hover {
+            transform: scale(1.05);
+            background-color: #2e5a2e;
+        }
+
+        .months li {
+            list-style: none;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('select_month') }}" class="active">Дневники-отчеты</a></li>
+            <li><a href="{{ url_for('profilesoc') }}">Профиль</a></li>
+        </ul>
+        <div class="logout-button">
+            <a href="{{ url_for('logout') }}">Выйти</a>
+        </div>
+    </nav>
+
+    <div class="year-container">
+        <h1>Выбор месяца</h1>
+
+        {% for year, months in available_months.items() %}
+            <div class="year" onclick="toggleYear('{{ year }}')">{{ year }}</div>
+            <ul class="months" id="{{ year }}">
+                {% for month in months %}
+                    <li>
+                        <div class="month-card">
+                            <a href="{{ url_for('month_view', selected_month=month.value) }}" style="color: white; text-decoration: none;">{{ month.name }}</a>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    </div>
+
+    <script>
+        function toggleYear(year) {
+            var months = document.getElementById(year);
+            months.classList.toggle('show');
+        }
+
+        window.onload = function() {
+            var currentYear = new Date().getFullYear();
+            var months = document.getElementById(currentYear);
+            if (months) {
+                months.classList.add('show');
+            }
+        };
+    </script>
+</body>
+</html>

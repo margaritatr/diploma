@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Услуги за день</title>
+  <style>
+    body {
+      font-family: Arial,
+      sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      margin-top: 60px;
+      text-align: center;
+    }
+    h1 {
+       color: #3a6a3a;
+    }
+    nav {
+      background-color: #000;
+      padding: 10px 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      margin: 0;
+      padding: 0;
+    }
+    nav ul li a {
+      text-decoration: none;
+      color: white;
+      font-weight: bold;
+      padding: 12px 20px;
+      display: block;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+    nav ul li a:hover {
+      background-color: #444;
+    }
+    nav ul li a.active {
+      background-color: #555;
+    }
+    .logout-button a {
+      text-decoration: none;
+      color: white;
+      background-color: #2a4e2a;
+      padding: 10px 15px;
+      border-radius: 5px; font-weight: bold;
+    }
+
+    .flash {
+       max-width: 800px;
+       margin: 20px auto;
+       padding: 10px;
+       border-radius: 5px;
+       font-weight: bold;
+     }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .client {
+      background: white;
+      margin: 15px auto;
+      padding: 15px;
+      border-radius: 5px;
+      max-width: 800px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      cursor: pointer;
+      font-weight: bold;
+      position: relative;
+    }
+    .services, .service-form {
+      margin: 10px auto;
+      max-width: 800px;
+      display: none;
+     }
+    .services ul {
+      list-style: none;
+      padding: 0;
+    }
+    .services li {
+       border-bottom: 1px solid #ddd;
+       padding: 5px 0;
+     }
+    .checkbox-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+      background: #fff; padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .checkbox-container div {
+      padding: 10px;
+      border: 1px solid #3a6a3a;
+      border-radius: 5px;
+      background-color: #f0f8f0;
+    }
+    button {
+      margin-top: 15px;
+      background: #3a6a3a;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px; cursor: pointer; transition: background 0.3s;
+    }
+    button:hover {
+      background: #2a4e2a;
+    }
+
+    form select, form input {
+      padding: 8px;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    #client-info-popup {
+      position: absolute;
+      background: #fff;
+      border: 1px solid #3a6a3a;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      display: none;
+      z-index: 2000;
+      font-size: 14px;
+      max-width: 250px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <ul>
+    <li><a href="{{ url_for('select_month') }}" class="active">Дневники-отчёты</a></li>
+    <li><a href="{{ url_for('profilesoc') }}">Профиль</a></li>
+  </ul>
+  <div class="logout-button">
+    <a href="{{ url_for('logout') }}">Выйти</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>{{ selected_date }}</h1>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<h2 style="text-align:center;">Обслуживаемые граждане</h2>
+{% for client in assigned_clients %}
+<div class="client"
+     data-func-class="{{ client.functional_class.class_name }}"
+     data-birthdate="{{ client.birth_date.strftime('%d.%m.%Y') if client.birth_date else '' }}"
+     data-address="{{ client.address }}"
+     data-gender="{{ 'Мужской' if client.gender == 'М' else 'Женский' }}"
+     data-phone="{{ client.phone_number }}"
+     data-visit-count="{{ client.visit_count }}"
+     onmouseover="showClientInfo(this)" onmouseout="hideClientInfo()"
+     onclick="toggleServices('{{ client.id }}')"
+     >
+  {{ client.first_name }} {{ client.last_name }}
+</div>
+
+
+  <div class="services" id="services-{{ client.id }}">
+    <h3>Оказанные услуги:</h3>
+    <ul>
+      {% set client_services = services|selectattr('client_id', 'equalto', client.id)|list %}
+      {% for service in client_services %}
+        <li>{{ service.service_type.service_name }}</li>
+      {% endfor %}
+      {% if client_services|length == 0 %}
+        <li>Нет оказанных услуг.</li>
+      {% endif %}
+    </ul>
+    {% if can_edit %} <button onclick="showServiceForm('{{ client.id }}')">
+      {% if services_by_client.get(client.id) %}
+        Редактировать
+      {% else %}
+        Внести информацию
+      {% endif %}
+    </button>
+    <div class="service-form" id="form-{{ client.id }}">
+      <h4>Выберите типы услуг:</h4>
+      <form method="POST">
+        <input type="hidden" name="client_id" value="{{ client.id }}">
+        <input type="hidden" name="selected_date" value="{{ selected_date }}">
+        <div class="checkbox-container">
+          {% for service_type in client_service_types[client.id] %}
+            {% set checked = '' %}
+            {% if services_by_client.get(client.id) and (service_type['id'] in services_by_client[client.id]) %}
+              {% set checked = 'checked' %}
+            {% endif %}
+            <div>
+              <input type="checkbox" name="service_types" value="{{ service_type['id'] }}" id="s-{{ service_type['id'] }}-{{ client.id }}" {{ checked }}>
+              <label for="s-{{ service_type['id'] }}-{{ client.id }}">{{ service_type['name'] }}</label>
+            </div>
+          {% endfor %}
+        </div>
+        <button type="submit">Сохранить услуги</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+{% endfor %}
+
+
+ {% if can_edit %}
+<h2 style="text-align:center; margin-top: 50px;">Дополнительно:</h2>
+<div style="max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+  <form method="POST" id="extra-services-form">
+    <input type="hidden" name="selected_date" value="{{ selected_date }}">
+    <label for="extra_client">Выберите гражданина:</label>
+    <select name="extra_client" id="extra_client" required>
+      <option disabled selected value="">-- выберите гражданина --</option>
+      {% for client in unassigned_clients %}
+        <option value="{{ client.id }}">{{ client.last_name }} {{ client.first_name }} {{ client.patronymic }}</option>
+      {% endfor %}
+    </select>
+
+    <h4>Выберите услуги:</h4>
+    <div class="checkbox-container" id="extra-services-container">
+      <!-- чекбоксы услуг подгружаются сюда динамически -->
+    </div>
+
+    <button type="submit" style="margin-top: 15px;">Добавить с услугами</button>
+  </form>
+</div>
+  {% endif %}
+<!-- всплывающее окно -->
+<div id="client-info-popup"></div>
+
+<script>
+  const popup = document.getElementById('client-info-popup');
+
+  function showClientInfo(elem) {
+    const rect = elem.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+   popup.innerHTML = `
+      <strong>Функциональный класс:</strong> ${elem.dataset.funcClass}<br>
+      <strong>Дата рождения:</strong> ${elem.dataset.birthdate}<br>
+      <strong>Адрес:</strong> ${elem.dataset.address}<br>
+      <strong>Пол:</strong> ${elem.dataset.gender}<br>
+      <strong>Телефон:</strong> ${elem.dataset.phone}<br>
+      <strong>Количество посещений:</strong> ${elem.dataset.visitCount}<br>
+    `;
+
+
+    popup.style.display = 'block';
+    popup.style.top = (rect.bottom + scrollTop + 5) + 'px';
+    popup.style.left = (rect.left + scrollLeft) + 'px';
+  }
+
+  function hideClientInfo() {
+    popup.style.display = 'none';
+  }
+
+  function toggleServices(clientId) {
+    const block = document.getElementById('services-' + clientId);
+    block.style.display = (block.style.display === 'block') ? 'none' : 'block';
+  }
+
+  function showServiceForm(clientId) {
+    const form = document.getElementById('form-' + clientId);
+    form.style.display = (form.style.display === 'block') ? 'none' : 'block';
+  }
+
+  document.getElementById('extra_client').addEventListener('change', function () {
+    const clientId = this.value;
+    const container = document.getElementById('extra-services-container');
+    container.innerHTML = '<p>Загрузка услуг...</p>';
+
+    fetch('/get_services_for_client/' + clientId)
+      .then(response => response.json())
+      .then(data => {
+        container.innerHTML = '';
+
+        if (!data.services || data.services.length === 0) {
+          container.innerHTML = '<p>Нет доступных услуг для этого гражданина.</p>';
+          return;
+        }
+
+        data.services.forEach(service => {
+          const div = document.createElement('div');
+
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.name = 'extra_service_types';
+          checkbox.value = service.id;
+          checkbox.id = 'extra-s-' + service.id;
+
+          const label = document.createElement('label');
+          label.htmlFor = checkbox.id;
+          label.textContent = service.name;
+
+          div.appendChild(checkbox);
+          div.appendChild(label);
+
+          container.appendChild(div);
+        });
+      })
+      .catch(() => {
+        container.innerHTML = '<p style="color:red;">Ошибка загрузки услуг.</p>';
+      });
+  });
+</script>
+
+</body>
+</html>

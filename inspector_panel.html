@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Генерация отчета</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            color: #1b1b1b;
+            padding-top: 60px;
+        }
+
+           nav {
+        background-color: #000;
+        padding: 10px 20px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            margin: 0;
+        }
+
+        nav ul li {
+            margin-right: 10px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            padding: 12px 20px;
+            display: block;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            background-color: #444;
+            transform: scale(1.05);
+        }
+
+        nav ul li a.active {
+            background-color: #555;
+            border-radius: 5px;
+        }
+
+        .logout-button a {
+            text-decoration: none;
+            color: white;
+            background-color: #2a4e2a;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+
+        .content {
+            margin-top: 20px;
+        }
+
+        .form-section {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-section h2 {
+            margin-bottom: 20px;
+        }
+
+        .form-section label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .form-section select,
+        .form-section input,
+        .form-section button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .form-section input[type="number"] {
+            font-size: 14px;
+            max-width: 100%;
+        }
+
+        .form-section button {
+            background-color: #3a6a3a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .form-section button:hover {
+            background-color: #2a4e2a;
+        }
+    </style>
+</head>
+<body>
+<nav>
+    <ul>
+        <li><a href="{{ url_for('inspector_welcome') }}" class="active">Дневники-отчеты</a></li>
+        <li><a href="{{ url_for('acts_view') }}">Акты</a></li>
+        <li><a href="{{ url_for('citizens') }}" >Граждане</a></li>
+        <li><a href="{{ url_for('profile') }}">Профиль</a></li>
+    </ul>
+    <div class="logout-button">
+        <a href="{{ url_for('logout') }}">Выйти</a>
+    </div>
+</nav>
+
+
+<div class="content">
+    <form class="form-section" method="POST" action="{{ url_for('inspector_generate_report') }}">
+        <h2>Сформировать отчет по социальному работнику</h2>
+
+        <label for="social_worker">Социальный работник:</label>
+        <select name="social_worker_id" id="social_worker" required>
+            <option value="">-- выберите --</option>
+            {% for worker in social_workers %}
+                <option value="{{ worker.id }}">{{ worker.surname }} {{ worker.first_name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="year">Год:</label>
+        <input type="number" name="year" id="year" min="1990" max="2100" required placeholder="Например: 2025">
+
+        <label for="month">Месяц:</label>
+        <select name="month" id="month" required>
+            <option value="">-- выберите --</option>
+            {% for num in range(1, 13) %}
+                <option value="{{ '%02d' % num }}">{{ months[num] }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Сгенерировать отчет</button>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            color: #1b1b1b;
+            padding-top: 60px;
+        }
+
+        nav {
+            background-color: #000;
+            padding: 10px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content: flex-start;
+            margin: 0;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            padding: 12px 20px;
+            display: block;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            background-color: #444;
+            transform: scale(1.05);
+        }
+
+        nav ul li a.active {
+            background-color: #555;
+            border-radius: 5px;
+        }
+
+        .logout-button {
+            margin-left: auto;
+        }
+
+        .logout-button a {
+            text-decoration: none;
+            color: white;
+            background-color: #2a4e2a;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: black;
+            font-size: 2.5em;
+            margin: 0;
+        }
+
+        .profile-info {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .profile-info p {
+            margin: 15px 0;
+        }
+
+        .profile-info p strong {
+            font-weight: bold;
+            color: #3a6a3a;
+        }
+
+        .profile-info .info-label {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #3a6a3a;
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .profile-info .info-value {
+            font-size: 1.1em;
+            color: #333;
+            flex: 2;
+        }
+
+
+        .profile-info .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        button {
+            background-color: #3a6a3a;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 1rem;
+            width: auto;
+        }
+
+        button:hover {
+            background-color: #2a4e2a;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+        <ul>
+            <li><a href="{{ url_for('select_month') }}">Дневники-отчеты</a></li>
+            <li><a href="{{ url_for('profilesoc') }}" class="active">Профиль</a></li>
+        </ul>
+        <div class="logout-button">
+            <a href="{{ url_for('logout') }}">Выйти</a>
+        </div>
+    </nav>
+
+<div class="container">
+    <h1>{{ user.surname }} {{ user.first_name }} {{ user.patronymic }}</h1>
+</div>
+
+
+<div class="profile-info">
+
+    <div class="info-row">
+        <div class="info-label">Имя пользователя:</div>
+        <div class="info-value">{{ user.username }}</div>
+    </div>
+    <div class="info-row">
+        <div class="info-label">Роль:</div>
+        <div class="info-value">{{ user.role.role_name }}</div>
+    </div>
+    <div class="info-row">
+        <div class="info-label">Территориальный центр:</div>
+        <div class="info-value">{{ center_name }}</div>
+    </div>
+    <div class="info-row">
+        <div class="info-label">Отделение:</div>
+        <div class="info-value">{{ department_name }}</div>
+    </div>
+</div>
+</body>
+</html>

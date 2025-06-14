@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Акты</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            color: #1b1b1b;
+            padding-top: 60px;
+        }
+
+        nav {
+            background-color: #000;
+            padding: 10px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content: flex-start;
+            margin: 0;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            padding: 12px 20px;
+            display: block;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            background-color: #444;
+            transform: scale(1.05);
+        }
+
+        nav ul li a.active {
+            background-color: #555;
+            border-radius: 5px;
+        }
+
+        .logout-button {
+            margin-left: auto;
+        }
+
+        .logout-button a {
+            text-decoration: none;
+            color: white;
+            background-color: #2a4e2a;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: black;
+            font-size: 2em;
+        }
+
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 30px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px; /* Установите максимальную ширину */
+            width: 100%; /* форма будет растягиваться на всю ширину контейнера */
+            margin: 0 auto; /* Центрирует контейнер по горизонтали */
+        }
+
+        .form-container input,
+        .form-container select,
+        .form-container button {
+            width: 100%; 
+            box-sizing: border-box;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .form-container button {
+            background-color: #3a6a3a;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 1rem;
+        }
+
+        .form-container button:hover {
+            background-color: #2a4e2a;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <ul>
+        <li><a href="{{ url_for('inspector_welcome') }}">Дневники-отчеты</a></li>
+        <li><a href="{{ url_for('acts_view') }}" class="active">Акты</a></li>
+        <li><a href="{{ url_for('citizens') }}">Граждане</a></li>
+        <li><a href="{{ url_for('profile') }}">Профиль</a></li>
+    </ul>
+    <div class="logout-button">
+        <a href="{{ url_for('logout') }}">Выйти</a>
+    </div>
+</nav>
+
+<div class="container">
+    <h1>Сформировать акт оказанных услуг</h1>
+</div>
+
+<div class="form-container">
+    <form method="POST">
+        <input type="number" name="year" id="year" min="1990" max="2100" required placeholder="Выберите год">
+        <input type="text" name="month" placeholder="Выберите месяц" required>
+        <select name="citizen" required>
+            <option value="">Выберите гражданина</option>
+            {% for citizen in citizens %}
+                <option value="{{ citizen.id }}">{{ citizen.first_name }} {{ citizen.last_name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Сгенерировать акт</button>
+    </form>
+</div>
+
+</body>
+</html>

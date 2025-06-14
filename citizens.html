@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Граждане центра</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            color: #1b1b1b;
+            padding-top: 60px;
+        }
+
+        nav {
+            background-color: #000;
+            padding: 10px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            margin: 0;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            padding: 12px 20px;
+            display: block;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            background-color: #444;
+            transform: scale(1.05);
+        }
+
+        nav ul li a.active {
+            background-color: #555;
+        }
+
+        .logout-button {
+            margin-left: auto;
+        }
+
+        .logout-button a {
+            text-decoration: none;
+            color: white;
+            background-color: #2a4e2a;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 40px 0 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: black;
+            font-size: 2.5em;
+            margin: 0;
+        }
+
+        .search-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search-form input[type="text"] {
+            flex: 2 1 300px;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .search-form select {
+            flex: 0 0 auto;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            min-width: 160px;
+        }
+
+        .search-form select[name="status"] {
+            width: auto;
+            min-width: unset;
+            padding: 8px 12px;
+        }
+
+
+        .search-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-buttons button {
+            background-color: #3a6a3a;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .search-buttons button:hover {
+            background-color: #2a4e2a;
+        }
+
+        .citizen {
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
+        }
+
+        .citizen:hover {
+            background-color: #e0e0e0;
+        }
+
+        .details {
+            display: none;
+            margin-left: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #addCitizenForm input, #addCitizenForm select, #addCitizenForm button,
+        .edit-form-container input, .edit-form-container select, .edit-form-container button {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        #addCitizenForm button, .edit-form-container button {
+            background-color: #3a6a3a;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #addCitizenForm button:hover, .edit-form-container button:hover {
+            background-color: #2a4e2a;
+        }
+
+        .edit-form-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .edit-form-container button {
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <ul>
+        <li><a href="{{ url_for('inspector_welcome') }}">Дневники-отчеты</a></li>
+        <li><a href="{{ url_for('acts_view') }}">Акты</a></li>
+        <li><a href="{{ url_for('citizens') }}" class="active">Граждане</a></li>
+        <li><a href="{{ url_for('profile') }}">Профиль</a></li>
+    </ul>
+    <div class="logout-button">
+        <a href="{{ url_for('logout') }}">Выйти</a>
+    </div>
+</nav>
+
+<div class="container">
+    <h1>Граждане центра</h1>
+</div>
+
+<form method="GET" class="search-form">
+    <input type="text" name="query" placeholder="Поиск " value="{{ request.args.get('query', '') }}">
+
+    <select name="func_class">
+        <option value="">Функциональный класс</option>
+        {% for fc in functional_classes %}
+            <option value="{{ fc.id }}" {% if request.args.get('func_class') == fc.id|string %}selected{% endif %}>{{ fc.class_name }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="social_worker">
+        <option value="">Социальный работник</option>
+        {% for sw in social_workers %}
+            <option value="{{ sw.id }}" {% if request.args.get('social_worker') == sw.id|string %}selected{% endif %}>{{ sw.surname }} {{ sw.first_name }} </option>
+        {% endfor %}
+    </select>
+
+    <select name="status">
+        <option value="">Статус</option>
+        <option value="Активен" {% if request.args.get('status') == 'Активен' %}selected{% endif %}>Активен</option>
+        <option value="Не активен" {% if request.args.get('status') == 'Не активен' %}selected{% endif %}>Не активен</option>
+    </select>
+
+    <div class="search-buttons">
+        <button type="submit">Поиск</button>
+        <button type="button" onclick="document.getElementById('addCitizenForm').style.display='block'">Добавить гражданина</button>
+    </div>
+</form>
+
+
+<div id="addCitizenForm" style="display:none; margin-top: 20px;">
+    <form method="POST">
+        <input type="hidden" name="edit_id" value="">
+
+        <div><input type="text" name="last_name" placeholder="Фамилия" required></div>
+        <div><input type="text" name="first_name" placeholder="Имя" required></div>
+        <div><input type="text" name="patronymic" placeholder="Отчество" required></div>
+        <div><input type="text" name="address" placeholder="Адрес" required></div>
+        <div><input type="date" name="birth_date" placeholder="Дата рождения"></div>
+
+        <div>
+            <select name="func_class" required>
+                <option value="">Выберите функциональный класс</option>
+                {% for functional_class in functional_classes %}
+                    <option value="{{ functional_class.id }}">{{ functional_class.class_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <select name="social_worker" required>
+                <option value="">Выберите социального работника</option>
+                {% for worker in social_workers %}
+                    <option value="{{ worker.id }}">{{ worker.surname }} {{ worker.first_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div><input type="text" name="contract_number" placeholder="Номер контракта" required></div>
+        <div><input type="date" name="contract_date" placeholder="Дата контракта"></div>
+        <div><input type="text" name="phone_number" placeholder="Номер телефона" required></div>
+        <div><input type="date" name="contract_end_date" placeholder="Дата окончания контракта"></div>
+        <div><input type="number" name="visit_count" placeholder="Количество посещений" min="0"></div>
+        <div><input type="hidden" name="status" value="1"></div>
+
+        <div>
+            <select name="gender">
+                <option value="">Пол</option>
+                <option value="М">М</option>
+                <option value="Ж">Ж</option>
+            </select>
+        </div>
+
+        <button type="submit">Добавить гражданина</button>
+        <button type="button" onclick="document.getElementById('addCitizenForm').style.display='none'">Отмена</button>
+    </form>
+</div>
+
+<div>
+    {% for citizen in citizens %}
+        <div class="citizen" onclick="toggleDetails('{{ citizen.id }}')">
+            {{ citizen.last_name }} {{ citizen.first_name }} {{ citizen.patronymic }}
+        </div>
+        <div class="details" id="details-{{ citizen.id }}">
+            <p><strong>Адрес:</strong> {{ citizen.address }}</p>
+            <p><strong>Дата рождения:</strong> {{ citizen.birth_date }}</p>
+            <p><strong>Функциональный класс:</strong> {{ functional_class_map[citizen.func_class] }}</p>
+            <p><strong>Социальный работник:</strong> {{ social_worker_map[citizen.user_id] }}</p>
+            <p><strong>Номер контракта:</strong> {{ citizen.contract_number }}</p>
+            <p><strong>Дата контракта:</strong> {{ citizen.contract_date }}</p>
+            <p><strong>Телефон:</strong> {{ citizen.phone_number }}</p>
+            <p><strong>Дата окончания контракта:</strong> {{ citizen.contract_end_date }}</p>
+            <p><strong>Количество посещений:</strong> {{ citizen.visit_count }}</p>
+            <p><strong>Статус:</strong> {{ citizen.status }}</p>
+            <p><strong>Пол:</strong> {{ citizen.gender }}</p>
+
+            <button onclick="editCitizen('{{ citizen.id }}')">Редактировать</button>
+
+            <div id="editForm{{ citizen.id }}" class="edit-form-container">
+                <form method="POST">
+                    <input type="hidden" name="edit_id" value="{{ citizen.id }}">
+                    <div><input type="text" name="last_name" value="{{ citizen.last_name }}" required></div>
+                    <div><input type="text" name="first_name" value="{{ citizen.first_name }}" required></div>
+                    <div><input type="text" name="patronymic" value="{{ citizen.patronymic }}" required></div>
+                    <div><input type="text" name="address" value="{{ citizen.address }}" required></div>
+                    <div><input type="date" name="birth_date" value="{{ citizen.birth_date }}"></div>
+                    <div>
+                        <select name="func_class" required>
+                            {% for functional_class in functional_classes %}
+                                <option value="{{ functional_class.id }}" {% if functional_class.id == citizen.func_class %}selected{% endif %}>{{ functional_class.class_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <select name="social_worker" required>
+                            {% for worker in social_workers %}
+                                <option value="{{ worker.id }}" {% if worker.id == citizen.user_id %}selected{% endif %}>{{ worker.surname }} {{ worker.first_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div><input type="text" name="contract_number" value="{{ citizen.contract_number }}" required></div>
+                    <div><input type="date" name="contract_date" value="{{ citizen.contract_date }}"></div>
+                    <div><input type="text" name="phone_number" value="{{ citizen.phone_number }}" required></div>
+                    <div><input type="date" name="contract_end_date" value="{{ citizen.contract_end_date }}"></div>
+                    <div><input type="number" name="visit_count" value="{{ citizen.visit_count }}"></div>
+                    <div>
+                        <select name="status">
+                            <option value="">Статус</option>
+                            <option value="Активен" {% if citizen.status == 'Активен' %}selected{% endif %}>Активен</option>
+                            <option value="Не активен" {% if citizen.status == 'Не активен' %}selected{% endif %}>Не активен</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select name="gender">
+                            <option value="">Пол</option>
+                            <option value="М" {% if citizen.gender == 'М' %}selected{% endif %}>М</option>
+                            <option value="Ж" {% if citizen.gender == 'Ж' %}selected{% endif %}>Ж</option>
+                        </select>
+                    </div>
+                    <button type="submit">Сохранить изменения</button>
+                    <button type="button" onclick="cancelEdit('{{ citizen.id }}')">Отмена</button>
+                </form>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    function toggleDetails(citizenId) {
+        const details = document.getElementById('details-' + citizenId);
+        details.style.display = details.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function editCitizen(id) {
+        document.getElementById('editForm' + id).style.display = 'block';
+    }
+
+    function cancelEdit(id) {
+        document.getElementById('editForm' + id).style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
